@@ -192,6 +192,10 @@ button {
   cursor: pointer;
 }
 
+.suggestion-type {
+  display: none !important;
+}
+
 .suggestion-item:hover,
 .suggestion-item.active {
   background: var(--surface-alt);
@@ -288,21 +292,25 @@ button {
 .difficulty-easy {
   background: var(--success-bg);
   color: var(--success-text);
+  border: 1px solid rgba(17, 122, 55, 0.18);
 }
 
 .difficulty-medium {
   background: var(--warning-bg);
   color: var(--warning-text);
+  border: 1px solid rgba(154, 103, 0, 0.18);
 }
 
 .difficulty-hard {
   background: var(--hard-bg);
   color: var(--hard-text);
+  border: 1px solid rgba(207, 34, 46, 0.18);
 }
 
 .difficulty-unknown {
   background: var(--surface-alt);
   color: var(--muted);
+  border: 1px solid var(--border);
 }
 
 .result-meta,
@@ -318,6 +326,40 @@ button {
   border-radius: 6px;
   color: var(--muted);
   background: var(--surface);
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.pagination-button {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: var(--surface-alt);
+}
+
+.pagination-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #1f2328;
+}
+
+.pagination-button:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 code {

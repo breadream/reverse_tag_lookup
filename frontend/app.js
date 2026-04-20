@@ -5,6 +5,7 @@ const statusEl = document.getElementById("status");
 const resultCountEl = document.getElementById("result-count");
 const matchedTagsEl = document.getElementById("matched-tags");
 const resultsEl = document.getElementById("results");
+const paginationEl = document.getElementById("pagination");
 const template = document.getElementById("result-template");
 const availableTagsEl = document.getElementById("available-tags");
 const suggestionsEl = document.getElementById("search-suggestions");
@@ -28,6 +29,9 @@ const suggestionTagMap = new Map();
 let latestSuggestions = [];
 let suggestionRequestId = 0;
 let suggestionApiAvailable = true;
+let currentResults = [];
+let currentPage = 1;
+const PAGE_SIZE = 25;
 
 function setStatus(message, type = "info") {
   statusEl.textContent = message;
@@ -38,6 +42,7 @@ function clearResults() {
   resultsEl.innerHTML = "";
   resultCountEl.textContent = "";
   matchedTagsEl.textContent = "";
+  paginationEl.innerHTML = "";
 }
 
 function renderEmptyState(message) {
@@ -201,11 +206,7 @@ function createSuggestionNode(suggestion) {
   name.className = "suggestion-name";
   name.textContent = suggestion.name;
 
-  const type = document.createElement("span");
-  type.className = "suggestion-type";
-  type.textContent = suggestion.category === "topic" ? "topic" : "level";
-
-  item.append(name, type);
+  item.append(name);
   item.addEventListener("mousedown", (event) => {
     event.preventDefault();
     applySuggestion(suggestion.name);
@@ -253,6 +254,127 @@ function renderAvailableTags() {
     });
     availableTagsEl.appendChild(button);
   }
+}
+
+function totalPages() {
+  return Math.max(1, Math.ceil(currentResults.length / PAGE_SIZE));
+}
+
+function pageWindow(page, maxPage) {
+  const size = 5;
+  const half = Math.floor(size / 2);
+  let start = Math.max(1, page - half);
+  let end = Math.min(maxPage, start + size - 1);
+
+  if (end - start + 1 < size) {
+    start = Math.max(1, end - size + 1);
+  }
+
+  return { start, end };
+}
+
+function createPaginationButton(label, page, { active = false, disabled = false } = {}) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "pagination-button";
+  if (active) {
+    button.classList.add("active");
+    button.setAttribute("aria-current", "page");
+  }
+  button.textContent = label;
+  button.disabled = disabled;
+  button.addEventListener("click", () => {
+    currentPage = page;
+    renderCurrentPage();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+  return button;
+}
+
+function renderPagination() {
+  paginationEl.innerHTML = "";
+
+  const maxPage = totalPages();
+  if (maxPage <= 1) {
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  fragment.appendChild(
+    createPaginationButton("Prev", Math.max(1, currentPage - 1), {
+      disabled: currentPage === 1,
+    }),
+  );
+
+  const { start, end } = pageWindow(currentPage, maxPage);
+  for (let page = start; page <= end; page += 1) {
+    fragment.appendChild(
+      createPaginationButton(String(page), page, {
+        active: page === currentPage,
+      }),
+    );
+  }
+
+  fragment.appendChild(
+    createPaginationButton("Next", Math.min(maxPage, currentPage + 1), {
+      disabled: currentPage === maxPage,
+    }),
+  );
+
+  paginationEl.appendChild(fragment);
+}
+
+function renderCurrentPage() {
+  resultsEl.innerHTML = "";
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pagedResults = currentResults.slice(start, start + PAGE_SIZE);
+  const fragment = document.createDocumentFragment();
+
+  for (const result of pagedResults) {
+    const node = template.content.firstElementChild.cloneNode(true);
+    const link = node.querySelector(".result-link");
+    const id = node.querySelector(".result-id");
+    const meta = node.querySelector(".result-meta");
+    const matched = node.querySelector(".result-matched");
+    const tags = node.querySelector(".result-tags");
+    const badge = node.querySelector(".difficulty-badge");
+
+    const title = result.title || "Untitled problem";
+    const matchedNames = getUniqueSortedTagNames(
+      Array.isArray(result.matched_tags) ? result.matched_tags : [],
+    );
+    const matchedNameSet = new Set(matchedNames.map(normalizeTagValue));
+    const tagNames = getUniqueSortedTagNames(
+      Array.isArray(result.tags) ? result.tags : [],
+    ).filter((tag) => !matchedNameSet.has(normalizeTagValue(tag)));
+
+    link.textContent = title;
+    link.href = buildProblemUrl(result);
+    id.textContent = result.id ? `#${result.id}` : "";
+
+    badge.textContent = result.difficulty || "Unknown";
+    badge.className = `difficulty-badge difficulty-${difficultyClass(result.difficulty)}`;
+
+    meta.innerHTML = "";
+    for (const detail of buildMetaLine(result)) {
+      const pill = document.createElement("span");
+      pill.className = "meta-pill";
+      pill.textContent = detail;
+      meta.appendChild(pill);
+    }
+
+    matched.textContent = matchedNames.length > 0 ? `Matched: ${matchedNames.join(", ")}` : "";
+    matched.hidden = matchedNames.length === 0;
+
+    tags.textContent = tagNames.length > 0 ? `Tags: ${tagNames.join(", ")}` : "";
+    tags.hidden = tagNames.length === 0;
+
+    fragment.appendChild(node);
+  }
+
+  resultsEl.appendChild(fragment);
+  renderPagination();
 }
 
 function syncTagsFromPayload(payload) {
@@ -311,52 +433,9 @@ function renderResults(payload) {
     renderEmptyState("No matching questions found.");
     return;
   }
-
-  const fragment = document.createDocumentFragment();
-
-  for (const result of results) {
-    const node = template.content.firstElementChild.cloneNode(true);
-    const link = node.querySelector(".result-link");
-    const id = node.querySelector(".result-id");
-    const meta = node.querySelector(".result-meta");
-    const matched = node.querySelector(".result-matched");
-    const tags = node.querySelector(".result-tags");
-    const badge = node.querySelector(".difficulty-badge");
-
-    const title = result.title || "Untitled problem";
-    const matchedNames = getUniqueSortedTagNames(
-      Array.isArray(result.matched_tags) ? result.matched_tags : [],
-    );
-    const matchedNameSet = new Set(matchedNames.map(normalizeTagValue));
-    const tagNames = getUniqueSortedTagNames(
-      Array.isArray(result.tags) ? result.tags : [],
-    ).filter((tag) => !matchedNameSet.has(normalizeTagValue(tag)));
-
-    link.textContent = title;
-    link.href = buildProblemUrl(result);
-    id.textContent = result.id ? `#${result.id}` : "";
-
-    badge.textContent = result.difficulty || "Unknown";
-    badge.dataset.difficulty = difficultyClass(result.difficulty);
-
-    meta.innerHTML = "";
-    for (const detail of buildMetaLine(result)) {
-      const pill = document.createElement("span");
-      pill.className = "meta-pill";
-      pill.textContent = detail;
-      meta.appendChild(pill);
-    }
-
-    matched.textContent = matchedNames.length > 0 ? `Matched: ${matchedNames.join(", ")}` : "";
-    matched.hidden = matchedNames.length === 0;
-
-    tags.textContent = tagNames.length > 0 ? `Tags: ${tagNames.join(", ")}` : "";
-    tags.hidden = tagNames.length === 0;
-
-    fragment.appendChild(node);
-  }
-
-  resultsEl.appendChild(fragment);
+  currentResults = results;
+  currentPage = 1;
+  renderCurrentPage();
   resultCountEl.textContent = `${results.length} result${results.length === 1 ? "" : "s"}`;
 }
 

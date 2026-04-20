@@ -605,7 +605,7 @@ impl ProblemRecord {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Copy, Hash)]
 #[serde(rename_all = "snake_case")]
 enum TagCategory {
     PositionLevel,
