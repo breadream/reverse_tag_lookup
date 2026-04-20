@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LeetCode Tag Lookup</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <p class="eyebrow">Reverse Tag Lookup</p>
+        <h1>Find problems by hidden tags</h1>
+        <p class="intro">
+          Search tags like <code>staff</code>, <code>senior</code>, or
+          <code>monotonic stack</code>.
+        </p>
+      </header>
+
+      <section class="search-panel" aria-label="Search">
+        <form id="search-form" class="search-form">
+          <label for="query" class="label">Topic tag</label>
+          <div class="search-row">
+            <div class="search-input-wrap">
+              <input
+                id="query"
+                name="query"
+                type="search"
+                placeholder="staff"
+                autocomplete="off"
+                spellcheck="false"
+                aria-autocomplete="list"
+                aria-controls="search-suggestions"
+                aria-expanded="false"
+                required
+              >
+              <div
+                id="search-suggestions"
+                class="search-suggestions"
+                role="listbox"
+                hidden
+              ></div>
+            </div>
+            <button id="search-button" type="submit">Search</button>
+          </div>
+        </form>
+
+        <p id="status" class="status" role="status" aria-live="polite">
+          Ready. The first search can take a bit while the cache warms up.
+        </p>
+      </section>
+
+      <section class="tag-panel" aria-label="Available hidden tags">
+        <div class="results-header">
+          <h2>Hidden Levels</h2>
+          <p class="result-count">Tap a chip to search.</p>
+        </div>
+        <div id="available-tags" class="tag-list"></div>
+      </section>
+
+      <section class="results-section" aria-label="Results">
+        <div class="results-header">
+          <h2>Results</h2>
+          <p id="result-count" class="result-count"></p>
+        </div>
+
+        <p id="matched-tags" class="matched-tags"></p>
+
+        <ul id="results" class="results-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <template id="result-template">
+      <li class="result-item">
+        <div class="result-top">
+          <div class="result-title-group">
+            <a class="result-link" target="_blank" rel="noreferrer noopener"></a>
+            <span class="result-id"></span>
+          </div>
+          <span class="difficulty-badge"></span>
+        </div>
+        <p class="result-meta"></p>
+        <div class="result-matched"></div>
+        <div class="result-tags"></div>
+      </li>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
