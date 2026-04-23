@@ -2,6 +2,8 @@
 
 Find LeetCode problems by hidden position-level tags such as `Staff`, `Senior Staff`, and `Principal`, plus normal topic tags such as `Monotonic Stack`.
 
+![Reverse Tag Lookup app screenshot](docs/app-screenshot.png)
+
 ## Requirements
 
 Install Docker Desktop:
