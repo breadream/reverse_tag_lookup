@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Reverse Tag Lookup">
+  <rect width="64" height="64" rx="14" fill="#1f2328"/>
+  <path d="M16 22.5C16 18.9101 18.9101 16 22.5 16H38.5C42.0899 16 45 18.9101 45 22.5V30.5C45 34.0899 42.0899 37 38.5 37H33.5L25.5 45V37H22.5C18.9101 37 16 34.0899 16 30.5V22.5Z" fill="#FFA116"/>
+  <path d="M26 23H35" stroke="#1f2328" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M26 29H32" stroke="#1f2328" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="44.5" cy="43.5" r="7.5" fill="none" stroke="#ffffff" stroke-width="4"/>
+  <path d="M49.8 48.8L56 55" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+</svg>
